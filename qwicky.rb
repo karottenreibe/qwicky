@@ -61,8 +61,28 @@ MARKUP =
     end
 
 # Routes. {{{1
+helpers do
+    def redirect_home
+        redirect "/#{CONF[:homepage]}"
+    end
+end
+
 get '/' do
-    redirect "/#{CONF[:homepage]}"
+    redirect_home
+end
+
+get '/.settings' do
+    @settings = CONF
+    haml :settings
+end
+
+post '/.settings' do
+    CONF.merge!(params[:settings])
+    open("#{DIR}/qwicky.yml", 'w') { |f|
+        f.write(YAML::dump(CONF))
+    }
+    
+    redirect_home
 end
 
 get '/:page' do |page|
@@ -89,6 +109,6 @@ delete '/:page' do |page|
     page = Page.first(:name => page)
     page.destroy unless page.nil?
 
-    redirect "/"
+    redirect_home
 end
 
