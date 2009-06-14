@@ -95,6 +95,10 @@ post '/.settings' do
     redirect_home
 end
 
+get '/.stylesheet.css' do
+    sass :stylesheet
+end
+
 get '/:page' do |page|
     @page = Page.first(:name => page)
     redirect "/#{page}/edit" if @page.nil?
