@@ -66,31 +66,18 @@ get '/' do
 end
 
 get '/:page' do |page|
-    page = Page.first(:name => page)
+    @page = Page.first(:name => page)
+    redirect "/#{page}/edit" if @page.nil?
     haml :page
 end
 
 get '/:page/edit' do |page|
-    page = Page.first(:name => page)
+    @page = Page.first(:name => page) || Page.new
     haml :edit
 end
 
-get '/:page/create' do |page|
-    page = Page.new
-    haml :create
-end
-
 post '/:page' do |page|
-    page = Page.first(:name => page)
-    page.name = params[:name]
-    page.content = params[:content]
-    page.save
-
-    redirect "/#{page}"
-end
-
-put '/:page' do |page|
-    page = Page.new
+    page = Page.first(:name => page) || Page.new
     page.name = params[:name]
     page.content = params[:content]
     page.save
@@ -99,6 +86,9 @@ put '/:page' do |page|
 end
 
 delete '/:page' do |page|
+    page = Page.first(:name => page)
+    page.destroy unless page.nil?
+
     redirect "/"
 end
 
