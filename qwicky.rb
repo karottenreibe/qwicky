@@ -98,13 +98,13 @@ end
 get '/:page' do |page|
     @page = Page.first(:name => page)
     redirect "/#{page}/edit" if @page.nil?
-    @title = @page.name
+    @title = page
     haml :page
 end
 
 get '/:page/edit' do |page|
     @page = Page.first(:name => page) || Page.new(:name => page)
-    @title = "Editing #{@page.name}"
+    @title = "Editing #{page}"
     haml :edit
 end
 
@@ -112,6 +112,7 @@ post '/:page' do |page|
     @page = Page.first(:name => page) || Page.new
     @page.name = params[:name]
     @page.content = params[:content]
+    @page.save
 
     redirect "/#{page}"
 end
