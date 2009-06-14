@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+require 'rubygems'
+require 'fileutils'
 require 'sinatra'
 require 'dm-core'
 require 'dm-timestamps'
@@ -14,19 +17,21 @@ class Page
 
     property :id, Serial
     property :name, Text, :nullable => false
-    property :content, Text
+    property :content, Text, :nullable => false
 end
 
 DataMapper::setup(:default, "sqlite3://#{DIR}/qwicky.db")
 DataMapper::auto_upgrade!
 
 # Settings stuff. {{{1
+FileUtils.touch("#{DIR}/qwicky.yml") unless File.exist?("#{DIR}/qwicky.yml")
+
 CONF = {
     :homepage => 'Home',
     :template_engine => 'text',
 }.merge(
     open("#{DIR}/qwicky.yml") { |f|
-        YAML::load(f)
+        YAML::load(f) || Hash.new
     }
 )
 
