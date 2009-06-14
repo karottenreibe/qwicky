@@ -70,6 +70,10 @@ helpers do
     def redirect_home
         redirect "/#{CONF[:homepage]}"
     end
+
+    def markup text
+        MARKUP.call(text)
+    end
 end
 
 get '/' do
@@ -78,6 +82,7 @@ end
 
 get '/.settings' do
     @settings = CONF
+    @title = 'Settings'
     haml :settings
 end
 
@@ -93,11 +98,13 @@ end
 get '/:page' do |page|
     @page = Page.first(:name => page)
     redirect "/#{page}/edit" if @page.nil?
+    @title = @page.name
     haml :page
 end
 
 get '/:page/edit' do |page|
-    @page = Page.first(:name => page) || Page.new
+    @page = Page.first(:name => page) || Page.new(:name => page)
+    @title = "Editing #{@page.name}"
     haml :edit
 end
 
@@ -105,7 +112,6 @@ post '/:page' do |page|
     page = Page.first(:name => page) || Page.new
     page.name = params[:name]
     page.content = params[:content]
-    page.save
 
     redirect "/#{page}"
 end
