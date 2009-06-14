@@ -109,9 +109,9 @@ get '/:page/edit' do |page|
 end
 
 post '/:page' do |page|
-    page = Page.first(:name => page) || Page.new
-    page.name = params[:name]
-    page.content = params[:content]
+    @page = Page.first(:name => page) || Page.new
+    @page.name = params[:name]
+    @page.content = params[:content]
 
     redirect "/#{page}"
 end
