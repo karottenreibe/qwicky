@@ -1,0 +1,14 @@
+!!!XML
+!!! Strict
+%html{html_attrs}
+
+  %head
+    %title 
+      Qwicky! --
+      - unless @title.nil?
+        = @title
+    %link{ :rel => 'stylesheet', :type => 'text/css', :href => "/stylesheet.css" }
+
+  %body
+    = yield
+

@@ -1,0 +1,10 @@
+%form{ :action => "/#{@page.name}", :method => 'post', :id => 'page' }
+  %label{ :for => 'name' } Name
+  %input{ :type => 'text', :name => 'name', :value => @page.name }
+  %br/
+  %label{ :for => 'content' } Content
+  %br/
+  %textarea{ :name => 'content' }= @page.content
+  %br/
+  %input{ :type => 'submit', :value => 'Save!' }
+
