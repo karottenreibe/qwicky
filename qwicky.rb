@@ -267,6 +267,16 @@ get '/..stylesheet.css' do
     sass :stylesheet
 end
 
+get '/..user.stylesheet.css' do
+    content_type 'text/css'
+
+    if File.exist?("#{DIR}/qwicky.sass")
+        sass open("#{DIR}/qwicky.sass").read()
+    else
+        ''
+    end
+end
+
 get '/..sitemap' do
     @editable = false
     @title = 'Sitemap'
