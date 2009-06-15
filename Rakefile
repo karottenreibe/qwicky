@@ -22,5 +22,12 @@ task :compile do
 
         sh "cat #{view} >> qwicky"
     end
+
+    open('qwicky', 'a') do |file|
+        file.puts
+        file.puts "@@favicon"
+    end
+
+    sh %q{echo -e ":plain\n`base64 favicon.png | sed 's/^/  /'`" >> qwicky}
 end
 

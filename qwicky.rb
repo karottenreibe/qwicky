@@ -8,6 +8,7 @@ require 'dm-validations'
 require 'dm-aggregates'
 require 'haml'
 require 'sass'
+require 'base64'
 
 # Read working dir. {{{1
 idx = ARGV.index { |arg| arg == '--' }
@@ -275,6 +276,13 @@ get '/..user.stylesheet.css' do
     else
         ''
     end
+end
+
+get '/..favicon' do
+    send_data Base64::decode64(haml(:favicon, :layout => false)),
+        :filename => 'favicon.png',
+        :type => 'image/png',
+        :disposition => 'inline'
 end
 
 get '/..sitemap' do

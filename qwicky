@@ -8,6 +8,7 @@ require 'dm-validations'
 require 'dm-aggregates'
 require 'haml'
 require 'sass'
+require 'base64'
 
 # Read working dir. {{{1
 idx = ARGV.index { |arg| arg == '--' }
@@ -76,6 +77,10 @@ module Markup
     # Text. {{{2
     class MText < Markup
         type 'text', 'Simple text'
+
+        def format text
+            "<span style='white-space:pre'>#{text}</span>"
+        end
     end
 
     # Markdown. {{{2
@@ -263,6 +268,23 @@ get '/..stylesheet.css' do
     sass :stylesheet
 end
 
+get '/..user.stylesheet.css' do
+    content_type 'text/css'
+
+    if File.exist?("#{DIR}/qwicky.sass")
+        sass open("#{DIR}/qwicky.sass").read()
+    else
+        ''
+    end
+end
+
+get '/..favicon' do
+    send_data Base64::decode64(haml(:favicon, :layout => false)),
+        :filename => 'favicon.png',
+        :type => 'image/png',
+        :disposition => 'inline'
+end
+
 get '/..sitemap' do
     @editable = false
     @title = 'Sitemap'
@@ -335,7 +357,9 @@ __END__
       Qwicky! --
       - unless @title.nil?
         = @title
+    %link{ :rel => 'shortcut icon', :href => '/..favicon' , :type => 'image/png' }
     %link{ :rel => 'stylesheet', :type => 'text/css', :href => "/..stylesheet.css" }
+    %link{ :rel => 'stylesheet', :type => 'text/css', :href => "/..user.stylesheet.css" }
     :javascript
       /*global window*/
 
@@ -493,3 +517,24 @@ form
     :font-family monospace
     :float right
 
+
+@@favicon
+:plain
+  iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A
+  /wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9kGDxMdDihyXoMAAAAZdEVYdENv
+  bW1lbnQAQ3JlYXRlZCB3aXRoIEdJTVBXgQ4XAAADTUlEQVRYw+2XbWjNcRTHP+de7h7YxTSmPSgb
+  XkysDXmMJKwQIXtBeUySosneeUdJeSVKFKVkyJrkMXnh4YVlQ1oz8zRyryvTbMMe7vHi/3fv/vd/
+  7/9/Z0XJefX//x7O73u+55zfOT9RVeUvioe/LP8B/AcwyHH283O0qQZpPA/BOgh3owoydAyMXYAW
+  rUPGLgCvL7GOL6/Q1iYE0HAvUlBmmZa4adgZgnOL0GA9GFuRkRNhSDb0fEdDz6C7HRFQBcpOIlM2
+  xT1f648j17cZ3950ZE+HMwMaqENOl6AqxuGeQbChFkZNjqIG9OJKtKkaEeDaZrThLFJ+044gI89g
+  TUCG5TnHgLYH4FQJIIioYXn5DaTP4REQqy7BqGITDvD6Flq91r7On2uABMjIdQYgVYsilINAdink
+  z0/oXll8zFxrWthYBW9u2xiIGJjhxMC7exB6alqOobhovXMI58yIhQR3Kq1DqcOjs04M6NPTpt/N
+  fwVyZ7umkebM6fsHgVq0u9O6xpNqMuDkgrd3+lhvUpo5wRWAZI63HqaGLqsbco1A9DsAkC9NdkUp
+  fvebJD3LCkhAWq268Oe5x0DsbSCS3E2m3lT74I82GwNJZYGNgSREtNe+z5cRk4qG5ZKW6QAgNTMO
+  irA7ghhrRYC0kTEs+dyLkWSX2BRpW4s7gK9x1uTMjE3OhC6NxkDhcgvtqkDgkTuAYJ3VWvHBiELr
+  WG9XEgxM3WlBKQI0X3EOwK4OaHtjHZxeYY+TefuhUpPoB+YdtM4+OekcgA8PW4hWTwoy/8AAGpIZ
+  e9FxSyOuEAGqyuLvbG2Gu/uiVROFLc/s6zqCcMgHBwW9sdM9DWXNZWR6hQlC4NU1OJoPL69He4Wr
+  W9HjE1E1q6bXB9tbkBEFdjc9PgHhbuPn0ZE4aZzoXdAeQG/tQhrPReq5hRkAbwq64gKMW4J44jdX
+  +v4BcmaW8T16KrLhYZIAfkm4x+gTutrgUwNUrzbALDyClO5IztGfGtD2D5A3F/EO7ieAWLmwDH1x
+  xWhW0rPQoTmILx2dtBEp3vIHuuJVNeDPN+LjWwgJ1cP7+8jXFn5H+g9ABNn+Eqbt7lfNSFxLBvI4
+  7fmBBuug8yMML0Cyiv4wgH/hZfQTiUAxe3ePrOMAAAAASUVORK5CYII=
