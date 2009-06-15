@@ -80,11 +80,6 @@ But DON'T PANIC, it's easy:
 Qwicky will automatically pick out the right gem to
 require.
 
-[1]: http://tomayko.com/writings/ruby-markdown-libraries-real-cheap-for-you-two-for-price-of-one
-    "Post about why not to use BlueCloth"
-[2]: http://github.com/karottenreibe/qwicky/
-    "Qwicky's Homepage/Git repo/Wiki/whatever :-)"
-
 Links
 -----
 
@@ -94,4 +89,24 @@ To link to other wiki pages, use the old, familiar
     [[other page|title]]
 
 syntax.
+
+Styles
+------
+
+If you don't like the looks of Qwicky -- no, of course
+that's impossible... silly...
+
+But in any case, if you create a file called _qwicky.sass_
+in the directory where your database and settings are
+stored, qwicky will automatically run it through
+[Sass] [3] and apply it.
+
+****
+
+[1]: http://tomayko.com/writings/ruby-markdown-libraries-real-cheap-for-you-two-for-price-of-one
+    "Post about why not to use BlueCloth"
+[2]: http://github.com/karottenreibe/qwicky/
+    "Qwicky's Homepage/Git repo/Wiki/whatever :-)"
+[3]: http://haml.hamptoncatlin.com/docs/rdoc/classes/Sass.html
+    "Documentation of Sass syntax"
 
