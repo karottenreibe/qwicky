@@ -7,8 +7,14 @@
       Qwicky! --
       - unless @title.nil?
         = @title
-    %link{ :rel => 'stylesheet', :type => 'text/css', :href => "/.stylesheet.css" }
+    %link{ :rel => 'stylesheet', :type => 'text/css', :href => "/..stylesheet.css" }
 
   %body
+
+    #header
+      - if @editable
+        %a{ :title => 'Edit this wiki page', :href => "/#{@page.name}/edit" } Edit
+      %a{ :title => 'Adjust settings', :href => '/..settings' } Settings
+
     = yield
 

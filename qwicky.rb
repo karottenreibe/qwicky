@@ -178,17 +178,22 @@ helpers do
     end
 end
 
+before do
+    @editable = true
+end
+
 get '/' do
     redirect_home
 end
 
-get '/.settings' do
+get '/..settings/?' do
+    @editable = false
     @settings = APP.conf
     @title = 'Settings'
     haml :settings
 end
 
-post '/.settings' do
+post '/..settings/?' do
     APP.conf.merge!(params[:settings])
     APP.set_markup
     open("#{DIR}/qwicky.yml", 'w') { |f|
@@ -198,24 +203,25 @@ post '/.settings' do
     redirect_home
 end
 
-get '/.stylesheet.css' do
+get '/..stylesheet.css' do
+    content_type 'text/css'
     sass :stylesheet
 end
 
-get '/:page' do |page|
+get '/:page/?' do |page|
     @page = Page.first(:name => page)
     redirect "/#{page}/edit" if @page.nil?
     @title = page
     haml :page
 end
 
-get '/:page/edit' do |page|
+get '/:page/edit/?' do |page|
     @page = Page.first(:name => page) || Page.new(:name => page)
     @title = "Editing #{page}"
     haml :edit
 end
 
-post '/:page' do |page|
+post '/:page/?' do |page|
     @page = Page.first(:name => page) || Page.new
     @page.name = params[:name]
     @page.content = params[:content]
@@ -224,7 +230,7 @@ post '/:page' do |page|
     redirect "/#{page}"
 end
 
-delete '/:page' do |page|
+delete '/:page/?' do |page|
     page = Page.first(:name => page)
     page.destroy unless page.nil?
 
