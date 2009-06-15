@@ -10,6 +10,8 @@ require 'haml'
 require 'sass'
 require 'base64'
 
+set :run, true
+
 # Read working dir. {{{1
 idx = ARGV.index { |arg| arg == '--' }
 DIR = File.expand_path(
