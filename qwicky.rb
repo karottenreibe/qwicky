@@ -9,7 +9,8 @@ require 'dm-aggregates'
 require 'haml'
 require 'sass'
 
-DIR = Dir.pwd
+DIR = ARGV[0] || Dir.pwd
+p "sqlite3://#{DIR}/qwicky.db"
 
 # Database stuff. {{{1
 class Page
