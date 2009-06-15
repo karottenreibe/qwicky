@@ -220,6 +220,13 @@ get '/..stylesheet.css' do
     sass :stylesheet
 end
 
+get '/..sitemap' do
+    @editable = false
+    @title = 'Sitemap'
+    @pages = Page.all.sort_by { |page| page.name }
+    haml :sitemap
+end
+
 get '/:page/?' do |page|
     @page = Page.first(:name => page)
     redirect "/#{page}/edit" if @page.nil?

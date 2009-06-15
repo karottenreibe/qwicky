@@ -20,6 +20,8 @@
       .right
         %a{ :title => 'Go the the main page of this wiki', :href => '/' } Home
         &#8226;
+        %a{ :title => 'View what pages this wiki has', :href => '/..sitemap' } Sitemap
+        &#8226;
         %a{ :title => 'Adjust settings', :href => '/..settings' } Settings
       - if @editable
         %a.edit{ :title => 'Edit this wiki page', :href => "/#{@page.name}/edit" } Edit

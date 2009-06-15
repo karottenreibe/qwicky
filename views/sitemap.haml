@@ -1,0 +1,5 @@
+%ul#sitemap
+  - @pages.each do |page|
+    %li
+      %a{ :title => page.name, :href => "/#{page.name}" }= page.name
+      %a.edit{ :title => page.name, :href => "/#{page.name}/edit" } (edit)

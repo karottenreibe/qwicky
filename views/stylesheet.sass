@@ -2,6 +2,7 @@
 !emphasis = #f40
 !background = #fff
 !foreground = #000
+!bad = #f00
 
 body
   :color= !foreground
@@ -14,6 +15,9 @@ a
 
   &:hover
     :border-bottom= 1px dotted !emphasis
+
+  .bad
+    :color= !bad
 
 form
 
@@ -51,6 +55,11 @@ form
 
 #main
   :padding 20px
+
+  ul#sitemap
+    a.edit
+      :font-family monospace
+      :font-size 0.8em
 
 #footer
   :border-top= 2px solid !border
