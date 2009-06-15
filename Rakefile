@@ -1,6 +1,5 @@
 require 'rake/clean'
 
-CLEAN.include 'bin/qwicky'
 CLEAN.include 'qwicky.db'
 CLEAN.include 'qwicky.yml'
 
