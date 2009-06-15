@@ -156,7 +156,7 @@ class Qwicky
         FileUtils.touch("#{DIR}/qwicky.yml")
 
         @conf = {
-            'homepage' => 'Home',
+            'homepage' => '',
             'markup' => 'text',
         }.merge(
             open("#{DIR}/qwicky.yml") { |f|
@@ -193,7 +193,11 @@ APP = Qwicky.new
 # Routes. {{{1
 helpers do
     def redirect_home
-        redirect "/#{APP.conf['homepage']}"
+        if APP.conf['homepage'].empty?
+            redirect "/..settings"
+        else
+            redirect "/#{APP.conf['homepage']}"
+        end
     end
 
     def markup text
