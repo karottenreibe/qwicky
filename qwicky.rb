@@ -163,6 +163,13 @@ class Qwicky
 
         @markup = Markup::Markup['text'].new
     end
+
+    def format text
+        markup.format(text).gsub %r{\[\[([^|\]]+)(\|([^\]]+))?\]\]} do |match|
+            link = '/' + ($3 || $1)
+            "<a href=#{link.inspect} title=#{$1.inspect}>#{$1}</a>"
+        end
+    end
 end
 
 APP = Qwicky.new
@@ -174,7 +181,7 @@ helpers do
     end
 
     def markup text
-        APP.markup.format(text)
+        APP.format(text)
     end
 end
 
