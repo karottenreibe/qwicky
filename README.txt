@@ -2,8 +2,8 @@ Share and enjoy!
 ================
 
 Hi dear visitor, this is the README file of
-**Qwicky**, the really quick wiki (yeah I
-know -- what a splendid name that is).
+**[Qwicky] [2]**, the REALLY quick wiki. (and
+small as well!)
 
 You are obviously reading this, so the README
 has already fulfilled it's purpose. Feel free
@@ -11,6 +11,14 @@ to close this file now.
 
 If, of course, you'd like to know how Qwicky
 is to be operated, feel also free to read on!
+
+Contributing
+------------
+
+Got a patch? Found a bug? Need a feature?
+Let me know!
+
+    karottenreibe _at_ gmail _dot_ com
 
 Usage
 -----
@@ -62,6 +70,8 @@ require.
 
 [1]: http://tomayko.com/writings/ruby-markdown-libraries-real-cheap-for-you-two-for-price-of-one
     "Post about why not to use BlueCloth"
+[2]: http://github.com/karottenreibe/qwicky/
+    "Qwicky's Homepage/Git repo/Wiki/whatever :-)"
 
 Links
 -----
