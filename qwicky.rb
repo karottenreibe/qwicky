@@ -9,7 +9,15 @@ require 'dm-aggregates'
 require 'haml'
 require 'sass'
 
-DIR = File.expand_path(ARGV[0] || Dir.pwd)
+idx = ARGV.index { |arg| arg == '--' }
+DIR = File.expand_path(
+    if idx.nil? or ARGV[idx+1].nil?
+        Dir.pwd
+    else
+        ARGV[idx+1]
+    end
+)
+
 unless File.exist?(DIR) and File.directory?(DIR)
     puts "No such directory: #{DIR}"
     exit -1
