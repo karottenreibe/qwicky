@@ -1,4 +1,4 @@
-%form{ :action => "/#{@page.name}", :method => 'post', :id => 'page' }
+%form{ :action => "/#{@page.name}", :method => 'post', :id => 'edit-page' }
   %label{ :for => 'name' } Name
   %input{ :type => 'text', :name => 'name', :value => @page.name }
   %br/
@@ -7,4 +7,8 @@
   %textarea{ :name => 'content' }= @page.content
   %br/
   %input{ :type => 'submit', :value => 'Save!' }
+
+%form{ :action => "/#{@page.name}", :method => 'post', :onsubmit => 'return confirm("Are you sure you want to delete this page?")' }
+  %input{ :type => 'hidden', :name => '_method', :value => 'delete' }
+  %input{ :type => 'submit', :value => 'Delete this page!' }
 
