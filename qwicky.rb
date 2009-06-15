@@ -9,8 +9,11 @@ require 'dm-aggregates'
 require 'haml'
 require 'sass'
 
-DIR = ARGV[0] || Dir.pwd
-p "sqlite3://#{DIR}/qwicky.db"
+DIR = File.expand_path(ARGV[0] || Dir.pwd)
+unless File.exist?(DIR) and File.directory?(DIR)
+    puts "No such directory: #{DIR}"
+    exit -1
+end
 
 # Database stuff. {{{1
 class Page
