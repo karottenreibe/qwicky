@@ -51,37 +51,39 @@ module Markup
         type 'markdown'
 
         def initialize
-            begin
-                require 'rdiscount'
-                return
-            rescue LoadError => boom
-            end
+            unless Object.const_defined?(:Markdown)
+                begin
+                    require 'rdiscount'
+                    return
+                rescue LoadError => boom
+                end
 
-            begin
-                require 'peg_markdown'
-                return
-            rescue LoadError => boom
-            end
+                begin
+                    require 'peg_markdown'
+                    return
+                rescue LoadError => boom
+                end
 
-            begin
-                require 'maruku'
-                Object.const_set(:Markdown, Maruku)
-                return
-            rescue LoadError => boom
-            end
+                begin
+                    require 'maruku'
+                    Object.const_set(:Markdown, Maruku)
+                    return
+                rescue LoadError => boom
+                end
 
-            begin
-                require 'bluecloth'
-                return
-            rescue LoadError => boom
-                puts "Looks like you don't have a Markdown interpreter installed!"
-                puts "Please get one, like"
-                puts "* RDiscount"
-                puts "* peg-markdown"
-                puts "* Maruku"
-                puts "* BlueCloth"
-                puts "Reverting to simple text markup"
-                throw :revert
+                begin
+                    require 'bluecloth'
+                    return
+                rescue LoadError => boom
+                    puts "Looks like you don't have a Markdown interpreter installed!"
+                    puts "Please get one, like"
+                    puts "* RDiscount"
+                    puts "* peg-markdown"
+                    puts "* Maruku"
+                    puts "* BlueCloth"
+                    puts "Reverting to simple text markup"
+                    throw :revert
+                end
             end
         end
 
@@ -94,13 +96,15 @@ module Markup
         type 'textile'
 
         def initialize
-            begin
-                require 'redcloth'
-            rescue LoadError => boom
-                puts "Looks like you don't have RedCloth installed!"
-                puts "This is the gem needed to render Textile syntax"
-                puts "Reverting to simple text markup"
-                throw :revert
+            unless Object.const_defined?(:RedCloth)
+                begin
+                    require 'redcloth'
+                rescue LoadError => boom
+                    puts "Looks like you don't have RedCloth installed!"
+                    puts "This is the gem needed to render Textile syntax"
+                    puts "Reverting to simple text markup"
+                    throw :revert
+                end
             end
         end
 
@@ -113,14 +117,16 @@ module Markup
         type 'rdoc'
         
         def initialize
-            begin
-                require 'rdoc/markup/simple_markup'
-                require 'rdoc/markup/simple_markup/to_html'
-            rescue LoadError => boom
-                puts "Looks like you don't have RDoc installed!"
-                puts "This is the gem needed to render RDoc syntax"
-                puts "Reverting to simple text markup"
-                throw :revert
+            unless Object.const_defined?(:SM)
+                begin
+                    require 'rdoc/markup/simple_markup'
+                    require 'rdoc/markup/simple_markup/to_html'
+                rescue LoadError => boom
+                    puts "Looks like you don't have RDoc installed!"
+                    puts "This is the gem needed to render RDoc syntax"
+                    puts "Reverting to simple text markup"
+                    throw :revert
+                end
             end
         end
 
