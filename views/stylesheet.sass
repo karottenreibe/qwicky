@@ -2,7 +2,6 @@
 !emphasis = #f40
 !background = #fff
 !foreground = #000
-!bad = #f00
 
 body
   :color= !foreground
@@ -16,8 +15,8 @@ a
   &:hover
     :border-bottom= 1px dotted !emphasis
 
-  .bad
-    :color= !bad
+  &.bad
+    :text-decoration line-through
 
 form
 

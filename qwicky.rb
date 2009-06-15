@@ -166,8 +166,12 @@ class Qwicky
 
     def format text
         markup.format(text).gsub %r{\[\[([^|\]]+)(\|([^\]]+))?\]\]} do |match|
-            link = '/' + ($3 || $1)
-            "<a href=#{link.inspect} title=#{$1.inspect}>#{$1}</a>"
+            page = $3 || $1
+            nexist = Page.first(:name => page).nil?
+            klass = nexist ? 'bad' : 'good'
+            title = nexist ? "Create page #{page}" : "Page #{page}"
+            link = '/' + page
+            "<a href=#{link.inspect} title=#{title.inspect} class='#{klass}'>#{$1}</a>"
         end
     end
 end
