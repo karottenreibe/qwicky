@@ -9,8 +9,15 @@
         = @title
     %link{ :rel => 'stylesheet', :type => 'text/css', :href => "/..stylesheet.css" }
     :javascript
+      /*global window*/
+
       function changePage() {
           window.location.href = '/' + document.getElementById('location').value;
+          return false;
+      }
+
+      function external(link) {
+          window.open(link.href);
           return false;
       }
 

@@ -37,17 +37,25 @@ DataMapper::auto_upgrade!
 
 # Markup stuff. {{{1
 module Markup
+    # Base class. {{{2
     class Markup
         class << self
+            attr_reader :description
+
             def [] type
                 @@markups ||= Hash.new
                 @@markups[type]
             end
 
-            def type id
+            def type id, description
                 @@markups ||= Hash.new
                 @@markups[id] = self
+                @description = description
             end
+        end
+
+        def description
+            self.class.description
         end
 
         def format text
@@ -55,12 +63,14 @@ module Markup
         end
     end
 
+    # Text. {{{2
     class MText < Markup
-        type 'text'
+        type 'text', 'Simple text'
     end
 
+    # Markdown. {{{2
     class MMarkdown < Markup
-        type 'markdown'
+        type 'markdown', 'Markdown'
 
         def initialize
             unless Object.const_defined?(:Markdown)
@@ -104,8 +114,9 @@ module Markup
         end
     end
 
+    # Textile. {{{2
     class MTextile < Markup
-        type 'textile'
+        type 'textile', 'Textile'
 
         def initialize
             unless Object.const_defined?(:RedCloth)
@@ -125,8 +136,9 @@ module Markup
         end
     end
 
+    # RDoc. {{{2
     class MRDoc < Markup
-        type 'rdoc'
+        type 'rdoc', 'RDoc'
         
         def initialize
             unless Object.const_defined?(:SM)
@@ -255,6 +267,7 @@ get '/:page/?' do |page|
 end
 
 get '/:page/edit/?' do |page|
+    @markup = APP.markup
     @page = Page.first(:name => page) || Page.new(:name => page)
     @title = "Editing #{page}"
     haml :edit

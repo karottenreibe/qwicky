@@ -2,6 +2,9 @@
   %label{ :for => 'name' } Name
   %input{ :type => 'text', :name => 'name', :value => @page.name }
   %br/
+  .markup
+    Markup:
+    = @markup.description
   %label{ :for => 'content' } Content
   %br/
   %textarea{ :name => 'content' }= @page.content
