@@ -8,13 +8,34 @@
       - unless @title.nil?
         = @title
     %link{ :rel => 'stylesheet', :type => 'text/css', :href => "/..stylesheet.css" }
+    :javascript
+      function changePage() {
+          window.location.href = '/' + document.getElementById('location').value;
+          return false;
+      }
 
   %body
 
     #header
+      %a.settings{ :title => 'Adjust settings', :href => '/..settings' } Settings
       - if @editable
-        %a{ :title => 'Edit this wiki page', :href => "/#{@page.name}/edit" } Edit
-      %a{ :title => 'Adjust settings', :href => '/..settings' } Settings
+        %a.edit{ :title => 'Edit this wiki page', :href => "/#{@page.name}/edit" } Edit
+      %form{ :action => '/', :method => 'get', :onsubmit => 'return changePage()' }
+        %input#location{ :type => 'text', :name => 'location' }
+        %input{ :type => 'submit', :value => 'Go!' }
 
-    = yield
+    #main
+      = yield
+
+    #footer
+      .copyleft
+        (c) 2009 by karottenreibe (karottenreibe _at_ gmail _dot_ com)
+        %br/
+        Licensed under the
+        %a{ :title => 'The License of Qwicky', :href => '/..license' } DONT'T PANIC License 1.1
+        %br/
+        If you want to contribute, visit
+        %a{ :title => 'Here you can contribute to the project', :href => 'http://wiki.github.com/karottenreibe/qwicky/' } Qwicky's GitHub page
+      - if @editable
+        %a.edit{ :title => 'Edit this wiki page', :href => "/#{@page.name}/edit" } Edit
 

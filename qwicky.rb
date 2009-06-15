@@ -210,6 +210,11 @@ post '/..settings/?' do
     redirect_home
 end
 
+get '/..license/?' do
+    content_type 'text'
+    open('LICENSE').read
+end
+
 get '/..stylesheet.css' do
     content_type 'text/css'
     sass :stylesheet

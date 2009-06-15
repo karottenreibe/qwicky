@@ -1,0 +1,33 @@
+!border = #eee
+!emphasis = #f40
+!background = #fff
+
+a
+  :text-decoration none
+  :color= !emphasis
+  :border-bottom= 1px dotted !background
+
+  &:hover
+    :border-bottom= 1px dotted !emphasis
+
+#header
+  :text-align center
+  :border-bottom= 2px solid !border
+  :padding 5px
+
+  a.settings
+    :float right
+  a.edit
+    :float left
+
+#main
+  :padding 20px
+
+#footer
+  :border-top= 2px solid !border
+  :padding 5px
+
+  .copyleft
+    :font-family monospace
+    :float right
+
