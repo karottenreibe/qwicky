@@ -9,6 +9,7 @@ task :compile do
 
     open('qwicky', 'a') do |file|
         file.puts
+        file.puts "# Templates. {{{1"
         file.puts "__END__"
     end
 
