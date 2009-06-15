@@ -37,6 +37,18 @@ Usage
 
 4.  Enjoy! (and don't forget to share...)
 
+BTW, did I mention that you can tell qwicky
+where to put the wiki database and settings
+file?
+
+    qwicky -- some/dir/to/put/the/files/in
+
+Oh, and also try
+
+    qwicky --help
+
+for additional options...
+
 Markup
 ------
 
