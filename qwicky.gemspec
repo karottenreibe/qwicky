@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.date = %q{2009-06-15}
   s.description = %q{Qwicky is a REALLY small wiki implementation using Sinatra, DataMapper and SQLite3.}
   s.email = %q{karottenreibe@gmail.com}
-  s.files = ["HISTORY.txt", "README.txt", "LICENSE.txt", "bin/qwicky"]
+  s.files = ["HISTORY.txt", "README.txt", "LICENSE.txt", "bin/qwicky", "qwicky.gemspec"]
   s.has_rdoc = false
   s.homepage = %q{http://github.com/karottenreibe/qwicky}
   s.rubygems_version = %q{1.3.0}
