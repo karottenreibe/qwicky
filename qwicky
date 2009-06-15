@@ -1,0 +1,495 @@
+#!/usr/bin/env ruby
+require 'rubygems'
+require 'fileutils'
+require 'sinatra'
+require 'dm-core'
+require 'dm-timestamps'
+require 'dm-validations'
+require 'dm-aggregates'
+require 'haml'
+require 'sass'
+
+# Read working dir. {{{1
+idx = ARGV.index { |arg| arg == '--' }
+DIR = File.expand_path(
+    if idx.nil? or ARGV[idx+1].nil?
+        Dir.pwd
+    else
+        ARGV[idx+1]
+    end
+)
+
+unless File.exist?(DIR) and File.directory?(DIR)
+    puts "No such directory: #{DIR}"
+    exit -1
+end
+
+# Database stuff. {{{1
+class Page
+    include DataMapper::Resource
+
+    property :id, Serial
+    property :name, Text, :nullable => false
+    property :content, Text, :nullable => false
+end
+
+DataMapper::setup(:default, "sqlite3://#{DIR}/qwicky.db")
+DataMapper::auto_upgrade!
+
+# Markup stuff. {{{1
+module Markup
+    # Base class. {{{2
+    class Markup
+        class << self
+            attr_reader :description, :link
+
+            def markups
+                @@markups
+            end
+
+            def [] type
+                @@markups ||= Hash.new
+                @@markups[type]
+            end
+
+            def type id, description, link = nil
+                @@markups ||= Hash.new
+                @@markups[id] = self
+                @description = description
+                @link = link
+            end
+        end
+
+        def description
+            self.class.description
+        end
+
+        def link
+            self.class.link
+        end
+
+        def format text
+            text
+        end
+    end
+
+    # Text. {{{2
+    class MText < Markup
+        type 'text', 'Simple text'
+    end
+
+    # Markdown. {{{2
+    class MMarkdown < Markup
+        type 'markdown', 'Markdown', 'http://daringfireball.net/projects/markdown/'
+
+        def initialize
+            unless Object.const_defined?(:Markdown)
+                begin
+                    require 'rdiscount'
+                    return
+                rescue LoadError => boom
+                end
+
+                begin
+                    require 'peg_markdown'
+                    return
+                rescue LoadError => boom
+                end
+
+                begin
+                    require 'maruku'
+                    Object.const_set(:Markdown, Maruku)
+                    return
+                rescue LoadError => boom
+                end
+
+                begin
+                    require 'bluecloth'
+                    return
+                rescue LoadError => boom
+                    puts "Looks like you don't have a Markdown interpreter installed!"
+                    puts "Please get one, like"
+                    puts "* RDiscount"
+                    puts "* peg-markdown"
+                    puts "* Maruku"
+                    puts "* BlueCloth"
+                    puts "Reverting to simple text markup"
+                    throw :revert
+                end
+            end
+        end
+
+        def format text
+            Markdown.new(text).to_html
+        end
+    end
+
+    # Textile. {{{2
+    class MTextile < Markup
+        type 'textile', 'Textile', 'http://textism.com/tools/textile/'
+
+        def initialize
+            unless Object.const_defined?(:RedCloth)
+                begin
+                    require 'redcloth'
+                rescue LoadError => boom
+                    puts "Looks like you don't have RedCloth installed!"
+                    puts "This is the gem needed to render Textile syntax"
+                    puts "Reverting to simple text markup"
+                    throw :revert
+                end
+            end
+        end
+
+        def format text
+            RedCloth.new(text).to_html
+        end
+    end
+
+    # RDoc. {{{2
+    class MRDoc < Markup
+        type 'rdoc', 'RDoc', 'http://rdoc.sourceforge.net/doc/index.html'
+        
+        def initialize
+            unless Object.const_defined?(:SM)
+                begin
+                    require 'rdoc/markup/simple_markup'
+                    require 'rdoc/markup/simple_markup/to_html'
+                rescue LoadError => boom
+                    puts "Looks like you don't have RDoc installed!"
+                    puts "This is the gem needed to render RDoc syntax"
+                    puts "Reverting to simple text markup"
+                    throw :revert
+                end
+            end
+        end
+
+        def format text
+            SM::SimpleMarkup.new.convert(text, SM::ToHtml.new)
+        end
+    end
+end
+
+# App class. {{{1
+class Qwicky
+    attr_accessor :conf, :markup
+
+    def initialize
+        FileUtils.touch("#{DIR}/qwicky.yml")
+
+        @conf = {
+            'homepage' => '',
+            'markup' => 'text',
+        }.merge(
+            open("#{DIR}/qwicky.yml") { |f|
+                YAML::load(f) || Hash.new
+            }
+        )
+
+        set_markup
+    end
+
+    def set_markup
+        catch :revert do
+            @markup = Markup::Markup[@conf['markup']].new
+            return
+        end
+
+        @markup = Markup::Markup['text'].new
+    end
+
+    def format text
+        markup.format(text).gsub %r{\[\[([^|\]]+)(\|([^\]]+))?\]\]} do |match|
+            page = $3 || $1
+            nexist = Page.first(:name => page).nil?
+            klass = nexist ? 'bad' : 'good'
+            title = nexist ? "Create page #{page}" : "Page #{page}"
+            link = '/' + page
+            "<a href=#{link.inspect} title=#{title.inspect} class='#{klass}'>#{$1}</a>"
+        end
+    end
+end
+
+APP = Qwicky.new
+
+# Routes. {{{1
+helpers do
+    def redirect_home
+        if APP.conf['homepage'].empty?
+            redirect "/..settings"
+        else
+            redirect "/#{APP.conf['homepage']}"
+        end
+    end
+
+    def markup text
+        APP.format(text)
+    end
+end
+
+before do
+    @editable = true
+end
+
+get '/' do
+    redirect_home
+end
+
+get '/..settings/?' do
+    @editable = false
+    @settings = APP.conf
+    @title = 'Settings'
+    @markups = Markup::Markup.markups
+    haml :settings
+end
+
+post '/..settings/?' do
+    APP.conf.merge!(params[:settings])
+    APP.set_markup
+    open("#{DIR}/qwicky.yml", 'w') { |f|
+        f.write(YAML::dump(APP.conf))
+    }
+    
+    redirect_home
+end
+
+get '/..license/?' do
+    content_type 'text'
+    open('LICENSE').read
+end
+
+get '/..stylesheet.css' do
+    content_type 'text/css'
+    sass :stylesheet
+end
+
+get '/..sitemap' do
+    @editable = false
+    @title = 'Sitemap'
+    @pages = Page.all.sort_by { |page| page.name }
+    haml :sitemap
+end
+
+get '/:page/?' do |page|
+    @page = Page.first(:name => page)
+    redirect "/#{page}/edit" if @page.nil?
+    @title = page
+    haml :page
+end
+
+get '/:page/edit/?' do |page|
+    @markup = APP.markup
+    @page = Page.first(:name => page) || Page.new(:name => page)
+    @title = "Editing #{page}"
+    haml :edit
+end
+
+post '/:page/?' do |page|
+    @page = Page.first(:name => page) || Page.new
+    @page.name = params[:name]
+    @page.content = params[:content]
+    @page.save
+
+    redirect "/#{page}"
+end
+
+delete '/:page/?' do |page|
+    page = Page.first(:name => page)
+    page.destroy unless page.nil?
+
+    redirect_home
+end
+
+
+__END__
+
+@@edit
+%form{ :action => "/#{@page.name}", :method => 'post', :id => 'edit-page' }
+  %label{ :for => 'name' } Name
+  %input{ :type => 'text', :name => 'name', :value => @page.name }
+  %br/
+  .markup
+    Markup:
+    - if @markup.link.nil?
+      = @markup.description
+    - else
+      %a{ :title => "#{@markup.description} homepage", :href => @markup.link, :onclick => 'return external(this)' }= @markup.description
+  %label{ :for => 'content' } Content
+  %br/
+  %textarea{ :name => 'content' }= @page.content
+  %br/
+  %input{ :type => 'submit', :value => 'Save!' }
+
+%form{ :action => "/#{@page.name}", :method => 'post', :onsubmit => 'return confirm("Are you sure you want to delete this page?")' }
+  %input{ :type => 'hidden', :name => '_method', :value => 'delete' }
+  %input{ :type => 'submit', :value => 'Delete this page!' }
+
+
+@@layout
+!!!XML
+!!! Strict
+%html{html_attrs}
+
+  %head
+    %title 
+      Qwicky! --
+      - unless @title.nil?
+        = @title
+    %link{ :rel => 'stylesheet', :type => 'text/css', :href => "/..stylesheet.css" }
+    :javascript
+      /*global window*/
+
+      function changePage() {
+          window.location.href = '/' + document.getElementById('location').value;
+          return false;
+      }
+
+      function external(link) {
+          window.open(link.href);
+          return false;
+      }
+
+  %body
+
+    #header
+      .right
+        %a{ :title => 'Go the the main page of this wiki', :href => '/' } Home
+        &#8226;
+        %a{ :title => 'View what pages this wiki has', :href => '/..sitemap' } Sitemap
+        &#8226;
+        %a{ :title => 'Adjust settings', :href => '/..settings' } Settings
+      - if @editable
+        %a.edit{ :title => 'Edit this wiki page', :href => "/#{@page.name}/edit" } Edit
+      %form{ :action => '/', :method => 'get', :onsubmit => 'return changePage()' }
+        %input#location{ :type => 'text', :name => 'location' }
+        %input{ :type => 'submit', :value => 'Go!' }
+
+    #main
+      = yield
+
+    #footer
+      .copyleft
+        (c) 2009 by
+        %a{ :title => "Visit karottenreibe's glorious homepage", :href => 'http://karottenreibe.heroku.com'} karottenreibe
+        (karottenreibe _at_ gmail _dot_ com)
+        %br/
+        Licensed under the
+        %a{ :title => 'The License of Qwicky', :href => '/..license' } DONT'T PANIC License 1.1
+        %br/
+        If you want to contribute, visit
+        %a{ :title => 'Here you can contribute to the project', :href => 'http://wiki.github.com/karottenreibe/qwicky/' } Qwicky's GitHub page
+      - if @editable
+        %a.edit{ :title => 'Edit this wiki page', :href => "/#{@page.name}/edit" } Edit
+
+
+@@page
+#page
+  %h1= @page.name
+  .content
+    = markup(@page.content)
+
+@@settings
+%form{ :action => "/..settings", :method => 'post', :id => 'settings' }
+  %label{ :for => 'settings[homepage]' } Homepage
+  %input{ :type => 'text', :name => 'settings[homepage]', :value => @settings['homepage'] }
+  %br/
+  %label{ :for => 'settings[markup]' } Markup engine
+  - @markups.each do |name,markup|
+    - if markup.link.nil?
+      %input{ :type => 'radio', :name => 'settings[markup]', :checked => (@settings['markup'] == name), :value => name }= markup.description
+    - else
+      %input{ :type => 'radio', :name => 'settings[markup]', :checked => (@settings['markup'] == name), :value => name }
+        %a{ :title => "#{markup.description} homepage", :href => markup.link, :onclick => 'return external(this)' }= markup.description
+  %br/
+  %input{ :type => 'submit', :value => 'Save!' }
+
+
+@@sitemap
+%ul#sitemap
+  - @pages.each do |page|
+    %li
+      %a{ :title => page.name, :href => "/#{page.name}" }= page.name
+      %a.edit{ :title => page.name, :href => "/#{page.name}/edit" } (edit)
+
+@@stylesheet
+!border = #eee
+!emphasis = #f40
+!background = #fff
+!foreground = #000
+
+body
+  :color= !foreground
+  :background-color= !background
+
+a
+  :text-decoration none
+  :color= !emphasis
+  :border-bottom= 1px dotted !background
+
+  &:hover
+    :border-bottom= 1px dotted !emphasis
+
+  &.bad
+    :text-decoration line-through
+
+form
+
+  input, textarea
+    :border= 1px solid !foreground
+    :background-color= !border
+
+  textarea
+    :width 400px
+    :height 400px
+
+  input[type=text]
+    :width 250px
+
+  label
+    :display inline-block
+    :width 145px
+    :font-family monospace
+    :padding-bottom 10px
+
+#header
+  :text-align center
+  :border-bottom= 2px solid !border
+  :padding 5px
+
+  .right
+    :float right
+  a.edit
+    :float left
+
+#main
+  :padding 20px
+
+  ul#sitemap
+    li
+      :display inline-block
+      :width 32%
+      :margin-bottom 10px
+
+      a.edit
+        :font-family monospace
+        :font-size 0.8em
+
+  form#edit-page
+    :padding-bottom 20px
+    :border-bottom= 2px solid !border
+    :margin-bottom 20px
+    :width 410px
+
+    .markup
+      :float right
+      :font-family monospace
+      :padding-right 10px
+
+#footer
+  :border-top= 2px solid !border
+  :padding 5px
+
+  .copyleft
+    :font-family monospace
+    :float right
+
