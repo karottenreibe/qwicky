@@ -76,6 +76,10 @@ module Markup
     # Text. {{{2
     class MText < Markup
         type 'text', 'Simple text'
+
+        def format text
+            "<span style='white-space:pre'>#{text}</span>"
+        end
     end
 
     # Markdown. {{{2
