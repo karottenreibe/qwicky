@@ -10,4 +10,5 @@
     -   Plain Text (*scary*)
 *   Sitemap
 *   Wiki links
+*   Custom stylesheets
 
