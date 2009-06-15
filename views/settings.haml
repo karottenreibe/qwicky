@@ -2,7 +2,7 @@
   %label{ :for => 'settings[homepage]' } Homepage
   %input{ :type => 'text', :name => 'settings[homepage]', :value => @settings['homepage'] }
   %br/
-  %label{ :for => 'settings[markup]' } Template engine
+  %label{ :for => 'settings[markup]' } Markup engine
   %input{ :type => 'radio', :name => 'settings[markup]', :checked => (@settings['markup'] == 'text'), :value => 'text' } Simple text
   %input{ :type => 'radio', :name => 'settings[markup]', :checked => (@settings['markup'] == 'markdown'), :value => 'markdown' } Markdown
   %input{ :type => 'radio', :name => 'settings[markup]', :checked => (@settings['markup'] == 'textile'), :value => 'textile' } Textile
