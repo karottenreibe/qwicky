@@ -1,0 +1,12 @@
+%form{ :action => "/.settings", :method => 'post', :id => 'settings' }
+  %label{ :for => 'settings[homepage]' } Homepage
+  %input{ :type => 'text', :name => 'settings[homepage]', :value => @settings['homepage'] }
+  %br/
+  %label{ :for => 'settings[markup]' } Template engine
+  %input{ :type => 'radio', :name => 'settings[markup]', :checked => (@settings['markup'] == 'text'), :value => 'text' } Simple text
+  %input{ :type => 'radio', :name => 'settings[markup]', :checked => (@settings['markup'] == 'markdown'), :value => 'markdown' } Markdown
+  %input{ :type => 'radio', :name => 'settings[markup]', :checked => (@settings['markup'] == 'textile'), :value => 'textile' } Textile
+  %input{ :type => 'radio', :name => 'settings[markup]', :checked => (@settings['markup'] == 'rdoc'), :value => 'rdoc' } RDoc
+  %br/
+  %input{ :type => 'submit', :value => 'Save!' }
+

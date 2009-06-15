@@ -23,56 +23,152 @@ end
 DataMapper::setup(:default, "sqlite3://#{DIR}/qwicky.db")
 DataMapper::auto_upgrade!
 
-# Settings stuff. {{{1
-FileUtils.touch("#{DIR}/qwicky.yml") unless File.exist?("#{DIR}/qwicky.yml")
+# Markup stuff. {{{1
+module Markup
+    class Markup
+        class << self
+            def [] type
+                @@markups ||= Hash.new
+                @@markups[type]
+            end
 
-CONF = {
-    :homepage => 'Home',
-    :template_engine => 'text',
-}.merge(
-    open("#{DIR}/qwicky.yml") { |f|
-        YAML::load(f) || Hash.new
-    }
-)
-
-MARKUP =
-    begin
-        case CONF[:template_engine]
-        when 'markdown'
-            require 'bluecloth'
-            lambda { |text|
-                BlueCloth.new(text).to_html
-            }
-        when 'rdoc'
-            require 'rdoc/markup/simple_markup'
-            lambda { |text|
-                SM::SimpleMarkup.new.convert(text, SM::ToHtml.new)
-            }
-        when 'textile'
-            require 'redcloth'
-            lambda { |text|
-                RedCloth.new(text).to_html
-            }
-        when 'text'
-            lambda { |text| text }
-        else
-            raise RuntimeError.new("Unknown template engine: #{CONF[:template]}")
+            def type id
+                @@markups ||= Hash.new
+                @@markups[id] = self
+            end
         end
-    rescue LoadError => boom
-        puts "Could not load template engine #{CONF[:template_engine]}."
-        puts "Seems like you didn't install the appropriate gem?"
-        puts "Switching to simple text mode."
-        lambda { |text| text }
+
+        def format text
+            text
+        end
     end
+
+    class MText < Markup
+        type 'text'
+    end
+
+    class MMarkdown < Markup
+        type 'markdown'
+
+        def initialize
+            begin
+                require 'rdiscount'
+                return
+            rescue LoadError => boom
+            end
+
+            begin
+                require 'peg_markdown'
+                return
+            rescue LoadError => boom
+            end
+
+            begin
+                require 'maruku'
+                Object.const_set(:Markdown, Maruku)
+                return
+            rescue LoadError => boom
+            end
+
+            begin
+                require 'bluecloth'
+                return
+            rescue LoadError => boom
+                puts "Looks like you don't have a Markdown interpreter installed!"
+                puts "Please get one, like"
+                puts "* RDiscount"
+                puts "* peg-markdown"
+                puts "* Maruku"
+                puts "* BlueCloth"
+                puts "Reverting to simple text markup"
+                throw :revert
+            end
+        end
+
+        def format text
+            Markdown.new(text).to_html
+        end
+    end
+
+    class MTextile < Markup
+        type 'textile'
+
+        def initialize
+            begin
+                require 'redcloth'
+            rescue LoadError => boom
+                puts "Looks like you don't have RedCloth installed!"
+                puts "This is the gem needed to render Textile syntax"
+                puts "Reverting to simple text markup"
+                throw :revert
+            end
+        end
+
+        def format text
+            RedCloth.new(text).to_html
+        end
+    end
+
+    class MRDoc < Markup
+        type 'rdoc'
+        
+        def initialize
+            begin
+                require 'rdoc/markup/simple_markup'
+                require 'rdoc/markup/simple_markup/to_html'
+            rescue LoadError => boom
+                puts "Looks like you don't have RDoc installed!"
+                puts "This is the gem needed to render RDoc syntax"
+                puts "Reverting to simple text markup"
+                throw :revert
+            end
+        end
+
+        def format text
+            SM::SimpleMarkup.new.convert(text, SM::ToHtml.new)
+        end
+    end
+end
+
+# App class. {{{1
+class Qwicky
+    attr_accessor :conf, :markup
+
+    def initialize
+        FileUtils.touch("#{DIR}/qwicky.yml")
+
+        @conf = {
+            'homepage' => 'Home',
+            'markup' => 'text',
+        }.merge(
+            open("#{DIR}/qwicky.yml") { |f|
+                YAML::load(f) || Hash.new
+            }
+        )
+
+        set_markup
+    end
+
+    def set_markup
+        catch :revert do
+            @markup = Markup::Markup[@conf['markup']].new
+            return
+        end
+
+        @markup = Markup::Markup['text'].new
+    end
+end
+
+APP = Qwicky.new
 
 # Routes. {{{1
 helpers do
     def redirect_home
-        redirect "/#{CONF[:homepage]}"
+        redirect "/#{APP.conf['homepage']}"
     end
 
     def markup text
-        MARKUP.call(text)
+        APP.markup.format(text)
     end
 end
 
@@ -81,15 +177,16 @@ get '/' do
 end
 
 get '/.settings' do
-    @settings = CONF
+    @settings = APP.conf
     @title = 'Settings'
     haml :settings
 end
 
 post '/.settings' do
-    CONF.merge!(params[:settings])
+    APP.conf.merge!(params[:settings])
+    APP.set_markup
     open("#{DIR}/qwicky.yml", 'w') { |f|
-        f.write(YAML::dump(CONF))
+        f.write(YAML::dump(APP.conf))
     }
     
     redirect_home
