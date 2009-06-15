@@ -4,7 +4,10 @@
   %br/
   .markup
     Markup:
-    = @markup.description
+    - if @markup.link.nil?
+      = @markup.description
+    - else
+      %a{ :title => "#{@markup.description} homepage", :href => @markup.link, :onclick => 'return external(this)' }= @markup.description
   %label{ :for => 'content' } Content
   %br/
   %textarea{ :name => 'content' }= @page.content

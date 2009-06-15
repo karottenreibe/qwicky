@@ -3,13 +3,12 @@
   %input{ :type => 'text', :name => 'settings[homepage]', :value => @settings['homepage'] }
   %br/
   %label{ :for => 'settings[markup]' } Markup engine
-  %input{ :type => 'radio', :name => 'settings[markup]', :checked => (@settings['markup'] == 'text'), :value => 'text' } Simple text
-  %input{ :type => 'radio', :name => 'settings[markup]', :checked => (@settings['markup'] == 'markdown'), :value => 'markdown' }
-    %a{ :title => 'Markdown homepage', :href => 'http://daringfireball.net/projects/markdown/', :onclick => 'return external(this)' } Markdown
-  %input{ :type => 'radio', :name => 'settings[markup]', :checked => (@settings['markup'] == 'textile'), :value => 'textile' }
-    %a{ :title => 'Textile homepage', :href => 'http://textism.com/tools/textile/', :onclick => 'return external(this)' } Textile
-  %input{ :type => 'radio', :name => 'settings[markup]', :checked => (@settings['markup'] == 'rdoc'), :value => 'rdoc' }
-    %a{ :title => 'RDoc documentation', :href => 'http://rdoc.sourceforge.net/doc/index.html', :onclick => 'return external(this)' } RDoc
+  - @markups.each do |name,markup|
+    - if markup.link.nil?
+      %input{ :type => 'radio', :name => 'settings[markup]', :checked => (@settings['markup'] == name), :value => name }= markup.description
+    - else
+      %input{ :type => 'radio', :name => 'settings[markup]', :checked => (@settings['markup'] == name), :value => name }
+        %a{ :title => "#{markup.description} homepage", :href => markup.link, :onclick => 'return external(this)' }= markup.description
   %br/
   %input{ :type => 'submit', :value => 'Save!' }
 

@@ -9,6 +9,7 @@ require 'dm-aggregates'
 require 'haml'
 require 'sass'
 
+# Read working dir. {{{1
 idx = ARGV.index { |arg| arg == '--' }
 DIR = File.expand_path(
     if idx.nil? or ARGV[idx+1].nil?
@@ -40,22 +41,31 @@ module Markup
     # Base class. {{{2
     class Markup
         class << self
-            attr_reader :description
+            attr_reader :description, :link
+
+            def markups
+                @@markups
+            end
 
             def [] type
                 @@markups ||= Hash.new
                 @@markups[type]
             end
 
-            def type id, description
+            def type id, description, link = nil
                 @@markups ||= Hash.new
                 @@markups[id] = self
                 @description = description
+                @link = link
             end
         end
 
         def description
             self.class.description
+        end
+
+        def link
+            self.class.link
         end
 
         def format text
@@ -70,7 +80,7 @@ module Markup
 
     # Markdown. {{{2
     class MMarkdown < Markup
-        type 'markdown', 'Markdown'
+        type 'markdown', 'Markdown', 'http://daringfireball.net/projects/markdown/'
 
         def initialize
             unless Object.const_defined?(:Markdown)
@@ -116,7 +126,7 @@ module Markup
 
     # Textile. {{{2
     class MTextile < Markup
-        type 'textile', 'Textile'
+        type 'textile', 'Textile', 'http://textism.com/tools/textile/'
 
         def initialize
             unless Object.const_defined?(:RedCloth)
@@ -138,7 +148,7 @@ module Markup
 
     # RDoc. {{{2
     class MRDoc < Markup
-        type 'rdoc', 'RDoc'
+        type 'rdoc', 'RDoc', 'http://rdoc.sourceforge.net/doc/index.html'
         
         def initialize
             unless Object.const_defined?(:SM)
@@ -229,6 +239,7 @@ get '/..settings/?' do
     @editable = false
     @settings = APP.conf
     @title = 'Settings'
+    @markups = Markup::Markup.markups
     haml :settings
 end
 
