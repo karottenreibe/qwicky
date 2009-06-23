@@ -23,6 +23,11 @@ Let me know!
 Usage
 -----
 
+0.  Install it, if you haven't already:
+
+        gem sources -a http://gems.github.com
+        gem install karottenreibe-qwicky
+
 1.  Start it:
 
         qwicky
