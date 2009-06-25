@@ -30,9 +30,10 @@
         %a{ :title => 'Go the the main page of this wiki', :href => '/' } Home
         &#8226;
         %a{ :title => 'View what pages this wiki has', :href => '/..sitemap' } Sitemap
-        &#8226;
-        %a{ :title => 'Adjust settings', :href => '/..settings' } Settings
-      - if @editable
+        - if @configurable
+          &#8226;
+          %a{ :title => 'Adjust settings', :href => '/..settings' } Settings
+      - if @page
         %a.edit{ :title => 'Edit this wiki page', :href => "/#{@page.name}/edit" } Edit
       %form{ :action => '/', :method => 'get', :onsubmit => 'return changePage()' }
         %input#location{ :type => 'text', :name => 'location' }
@@ -52,6 +53,6 @@
         %br/
         If you want to contribute, visit
         %a{ :title => 'Here you can contribute to the project', :href => 'http://wiki.github.com/karottenreibe/qwicky/' } Qwicky's GitHub page
-      - if @editable
+      - if @page
         %a.edit{ :title => 'Edit this wiki page', :href => "/#{@page.name}/edit" } Edit
 

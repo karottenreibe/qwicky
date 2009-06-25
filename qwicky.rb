@@ -186,7 +186,7 @@ class Qwicky
     attr_accessor :conf, :markup
 
     def initialize
-        FileUtils.touch(CONF_FILE) if File.writable?(CONF_FILE)
+        FileUtils.touch(CONF_FILE) unless File.exist?(CONF_FILE)
 
         @conf = {
             'homepage' => '',
@@ -239,7 +239,7 @@ helpers do
 end
 
 before do
-    @editable = true
+    @configurable = File.writable?(CONF_FILE)
 end
 
 get '/' do
@@ -248,14 +248,12 @@ end
 
 get '/..settings/?' do
     if File.writable?(CONF_FILE)
-        @editable = false
         @settings = APP.conf
         @title = 'Settings'
         @markups = Markup::Markup.markups
         haml :settings
     else
-        "<h1>Unfortunately, the config file for this
-        Qwicky instance is not writable!</h1>"
+        haml "%h1 Unfortunately, the config file for this Qwicky instance is not writable!"
     end
 end
 
@@ -300,7 +298,6 @@ get '/..favicon' do
 end
 
 get '/..sitemap' do
-    @editable = false
     @title = 'Sitemap'
     @pages = Page.all.sort_by { |page| page.name }
     haml :sitemap
