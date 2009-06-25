@@ -27,6 +27,10 @@ unless File.exist?(DIR) and File.directory?(DIR)
     exit -1
 end
 
+CONF_FILE = "#{DIR}/qwicky.yml"
+DB_FILE = "#{DIR}/qwicky.db"
+STYLES_FILE = "#{DIR}/qwicky.sass"
+
 # Database stuff. {{{1
 class Page
     include DataMapper::Resource
@@ -36,7 +40,7 @@ class Page
     property :content, Text, :nullable => false
 end
 
-DataMapper::setup(:default, "sqlite3://#{DIR}/qwicky.db")
+DataMapper::setup(:default, ENV['DATABASE_URL'] || "sqlite3://#{DB_FILE}")
 DataMapper::auto_upgrade!
 
 # Markup stuff. {{{1
@@ -182,13 +186,13 @@ class Qwicky
     attr_accessor :conf, :markup
 
     def initialize
-        FileUtils.touch("#{DIR}/qwicky.yml")
+        FileUtils.touch(CONF_FILE) if File.writable?(CONF_FILE)
 
         @conf = {
             'homepage' => '',
             'markup' => 'text',
         }.merge(
-            open("#{DIR}/qwicky.yml") { |f|
+            open(CONF_FILE) { |f|
                 YAML::load(f) || Hash.new
             }
         )
@@ -243,19 +247,27 @@ get '/' do
 end
 
 get '/..settings/?' do
-    @editable = false
-    @settings = APP.conf
-    @title = 'Settings'
-    @markups = Markup::Markup.markups
-    haml :settings
+    if File.writable?(CONF_FILE)
+        @editable = false
+        @settings = APP.conf
+        @title = 'Settings'
+        @markups = Markup::Markup.markups
+        haml :settings
+    else
+        "<h1>Unfortunately, the config file for this
+        Qwicky instance is not writable!</h1>"
+    end
 end
 
 post '/..settings/?' do
     APP.conf.merge!(params[:settings])
     APP.set_markup
-    open("#{DIR}/qwicky.yml", 'w') { |f|
-        f.write(YAML::dump(APP.conf))
-    }
+
+    if File.writable?(CONF_FILE)
+        open(CONF_FILE, 'w') { |f|
+            f.write(YAML::dump(APP.conf))
+        }
+    end
     
     redirect_home
 end
@@ -273,8 +285,8 @@ end
 get '/..user.stylesheet.css' do
     content_type 'text/css'
 
-    if File.exist?("#{DIR}/qwicky.sass")
-        sass open("#{DIR}/qwicky.sass").read()
+    if File.exist?(STYLES_FILE)
+        sass open(STYLES_FILE).read()
     else
         ''
     end
