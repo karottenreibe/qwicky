@@ -1,3 +1,9 @@
+0.0.4
+=====
+
+*   Fixed small bugs regarding markup
+*   Nicer blockquotes and code blocks
+
 0.0.3
 =====
 

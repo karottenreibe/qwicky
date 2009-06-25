@@ -440,7 +440,7 @@ __END__
 #page
   %h1= @page.name
   .content
-    = find_and_preserve markup(@page.content)
+    = find_and_preserve markup(@page.content), %w{pre blockquote}
 
 @@settings
 %form{ :action => "/..settings", :method => 'post', :id => 'settings' }
@@ -538,6 +538,21 @@ form
       :float right
       :font-family monospace
       :padding-right 10px
+
+  pre
+    :border-left= 3px solid !border
+    :padding 10px
+
+
+  blockquote
+    :margin 0px
+    :padding 10px
+    :font-style italic
+    :border-left= 3px solid !border
+
+    p
+      :display inline
+      :white-space pre
 
 #footer
   :border-top= 2px solid !border
