@@ -106,7 +106,17 @@ in the directory where your database and settings are
 stored, qwicky will automatically run it through
 [Sass] [3] and apply it.
 
-****
+Running Qwucky on a server
+==========================
+
+...is almost cruelly simple.
+
+1.  Set it up as normal, run it, set your settings.
+2.  Freeze your config file by making _qwicky.yml_ non-writable
+    to the user that runs Qwicky.
+3.  Share and enjoy!
+
+
 
 [1]: http://tomayko.com/writings/ruby-markdown-libraries-real-cheap-for-you-two-for-price-of-one
     "Post about why not to use BlueCloth"

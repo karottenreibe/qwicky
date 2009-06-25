@@ -27,6 +27,10 @@ unless File.exist?(DIR) and File.directory?(DIR)
     exit -1
 end
 
+CONF_FILE = "#{DIR}/qwicky.yml"
+DB_URL = ENV['DATABASE_URL'] || "sqlite3://#{DIR}/qwicky.db"
+STYLES_FILE = "#{DIR}/qwicky.sass"
+
 # Database stuff. {{{1
 class Page
     include DataMapper::Resource
@@ -36,8 +40,19 @@ class Page
     property :content, Text, :nullable => false
 end
 
-DataMapper::setup(:default, "sqlite3://#{DIR}/qwicky.db")
-DataMapper::auto_upgrade!
+DataMapper::setup(:default, DB_URL)
+
+begin
+    DataMapper::auto_upgrade!
+rescue Sqlite3Error => e
+    if e.message =~ %r{unable to open database file}
+        $stderr.puts "Unable to create/open `#{DB_URL}'"
+        $stderr.puts "Please make database file readable and writable."
+        exit -1
+    else
+        raise
+    end
+end
 
 # Markup stuff. {{{1
 module Markup
@@ -182,13 +197,19 @@ class Qwicky
     attr_accessor :conf, :markup
 
     def initialize
-        FileUtils.touch("#{DIR}/qwicky.yml")
+        begin
+            FileUtils.touch(CONF_FILE) unless File.exist?(CONF_FILE)
+        rescue Errno::EACCES
+            $stderr.puts "Unable to create `#{CONF_FILE}'"
+            $stderr.puts "Please make directory writable or manually create a readable config file."
+            exit -1
+        end
 
         @conf = {
             'homepage' => '',
             'markup' => 'text',
         }.merge(
-            open("#{DIR}/qwicky.yml") { |f|
+            open(CONF_FILE) { |f|
                 YAML::load(f) || Hash.new
             }
         )
@@ -235,7 +256,7 @@ helpers do
 end
 
 before do
-    @editable = true
+    @configurable = File.writable?(CONF_FILE)
 end
 
 get '/' do
@@ -243,19 +264,25 @@ get '/' do
 end
 
 get '/..settings/?' do
-    @editable = false
-    @settings = APP.conf
-    @title = 'Settings'
-    @markups = Markup::Markup.markups
-    haml :settings
+    if File.writable?(CONF_FILE)
+        @settings = APP.conf
+        @title = 'Settings'
+        @markups = Markup::Markup.markups
+        haml :settings
+    else
+        haml "%h1 Unfortunately, the config file for this Qwicky instance is not writable!"
+    end
 end
 
 post '/..settings/?' do
     APP.conf.merge!(params[:settings])
     APP.set_markup
-    open("#{DIR}/qwicky.yml", 'w') { |f|
-        f.write(YAML::dump(APP.conf))
-    }
+
+    if File.writable?(CONF_FILE)
+        open(CONF_FILE, 'w') { |f|
+            f.write(YAML::dump(APP.conf))
+        }
+    end
     
     redirect_home
 end
@@ -273,8 +300,8 @@ end
 get '/..user.stylesheet.css' do
     content_type 'text/css'
 
-    if File.exist?("#{DIR}/qwicky.sass")
-        sass open("#{DIR}/qwicky.sass").read()
+    if File.exist?(STYLES_FILE)
+        sass open(STYLES_FILE).read()
     else
         ''
     end
@@ -288,7 +315,6 @@ get '/..favicon' do
 end
 
 get '/..sitemap' do
-    @editable = false
     @title = 'Sitemap'
     @pages = Page.all.sort_by { |page| page.name }
     haml :sitemap
@@ -383,9 +409,10 @@ __END__
         %a{ :title => 'Go the the main page of this wiki', :href => '/' } Home
         &#8226;
         %a{ :title => 'View what pages this wiki has', :href => '/..sitemap' } Sitemap
-        &#8226;
-        %a{ :title => 'Adjust settings', :href => '/..settings' } Settings
-      - if @editable
+        - if @configurable
+          &#8226;
+          %a{ :title => 'Adjust settings', :href => '/..settings' } Settings
+      - if @page
         %a.edit{ :title => 'Edit this wiki page', :href => "/#{@page.name}/edit" } Edit
       %form{ :action => '/', :method => 'get', :onsubmit => 'return changePage()' }
         %input#location{ :type => 'text', :name => 'location' }
@@ -405,7 +432,7 @@ __END__
         %br/
         If you want to contribute, visit
         %a{ :title => 'Here you can contribute to the project', :href => 'http://wiki.github.com/karottenreibe/qwicky/' } Qwicky's GitHub page
-      - if @editable
+      - if @page
         %a.edit{ :title => 'Edit this wiki page', :href => "/#{@page.name}/edit" } Edit
 
 

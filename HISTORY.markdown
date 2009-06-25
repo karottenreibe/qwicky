@@ -1,3 +1,10 @@
+0.0.3
+=====
+
+*   Fixed bugs when permissions were set badly
+*   Made Qwicky server-ready (see README)
+*   Made settings freezable
+
 0.0.2
 =====
 
