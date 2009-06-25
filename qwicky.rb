@@ -13,7 +13,7 @@ require 'base64'
 set :run, true
 
 # Read working dir. {{{1
-idx = ARGV.index { |arg| arg == '--' }
+idx = ARGV.index('--')
 DIR = File.expand_path(
     if idx.nil? or ARGV[idx+1].nil?
         Dir.pwd
