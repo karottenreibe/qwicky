@@ -1,4 +1,4 @@
 #page
   %h1= @page.name
   .content
-    = find_and_preserve markup(@page.content)
+    = find_and_preserve markup(@page.content), %w{pre blockquote}
