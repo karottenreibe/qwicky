@@ -33,3 +33,31 @@ task :compile => ['bin'] do
     sh %q{echo -e ":plain\n`base64 favicon.png | sed 's/^/  /'`" >> bin/qwicky}
 end
 
+task :release => [:clean, :compile] do
+    sh "vim HISTORY.markdown"
+    sh "vim README.markdown"
+    sh "vim qwicky.gemspec"
+
+    print "Enter the new version number >> "
+    version = $stdin.gets
+
+    unless version =~ %r{[0-9]+\.[0-9]+\.[0-9]+}
+        puts "Aborting: Invalid version number given."
+        exit -1
+    end
+    
+    puts version
+    exit 0
+
+    puts "Committing"
+    sh "git commit -m 'Releasing v#{version}'"
+    puts "Tagging"
+    sh "git tag v#{version}"
+    puts "Pushing"
+    sh "git push"
+    puts "Pushing tags"
+    sh "git push --tags"
+
+    puts "Done!"
+end
+
