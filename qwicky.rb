@@ -28,7 +28,7 @@ unless File.exist?(DIR) and File.directory?(DIR)
 end
 
 CONF_FILE = "#{DIR}/qwicky.yml"
-DB_FILE = "#{DIR}/qwicky.db"
+DB_URL = ENV['DATABASE_URL'] || "sqlite3://#{DIR}/qwicky.db"
 STYLES_FILE = "#{DIR}/qwicky.sass"
 
 # Database stuff. {{{1
@@ -40,8 +40,19 @@ class Page
     property :content, Text, :nullable => false
 end
 
-DataMapper::setup(:default, ENV['DATABASE_URL'] || "sqlite3://#{DB_FILE}")
-DataMapper::auto_upgrade!
+DataMapper::setup(:default, DB_URL)
+
+begin
+    DataMapper::auto_upgrade!
+rescue Sqlite3Error => e
+    if e.message =~ %r{unable to open database file}
+        $stderr.puts "Unable to create/open `#{DB_URL}'"
+        $stderr.puts "Please make database file readable and writable."
+        exit -1
+    else
+        raise
+    end
+end
 
 # Markup stuff. {{{1
 module Markup
@@ -186,7 +197,13 @@ class Qwicky
     attr_accessor :conf, :markup
 
     def initialize
-        FileUtils.touch(CONF_FILE) unless File.exist?(CONF_FILE)
+        begin
+            FileUtils.touch(CONF_FILE) unless File.exist?(CONF_FILE)
+        rescue Errno::EACCES
+            $stderr.puts "Unable to create `#{CONF_FILE}'"
+            $stderr.puts "Please make directory writable or manually create a readable config file."
+            exit -1
+        end
 
         @conf = {
             'homepage' => '',
