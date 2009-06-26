@@ -308,10 +308,8 @@ get '/..user.stylesheet.css' do
 end
 
 get '/..favicon' do
-    send_data Base64::decode64(haml(:favicon, :layout => false)),
-        :filename => 'favicon.png',
-        :type => 'image/png',
-        :disposition => 'inline'
+    content_type 'image/png'
+    Base64::decode64(haml(:favicon, :layout => false)
 end
 
 get '/..sitemap' do
