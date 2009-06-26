@@ -111,7 +111,7 @@ module Markup
         type 'text', 'Simple text'
 
         def format text
-            "<span style='white-space:pre'>#{super}</span>"
+            "<pre class='simple'>#{super}</pre>"
         end
     end
 
