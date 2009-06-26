@@ -56,8 +56,11 @@ end
 
 # Markup stuff. {{{1
 module Markup
+
     # Base class. {{{2
     class Markup
+        WIKILINK = %r{\[\[([^|\]]+)(\|([^\]]+))?\]\]}
+
         class << self
             attr_reader :description, :link
 
@@ -76,6 +79,16 @@ module Markup
                 @description = description
                 @link = link
             end
+
+            def linkify page, display_name
+                nexist = Page.first(:name => page).nil?
+
+                klass = nexist ? 'bad' : 'good'
+                title = nexist ? "Create page `#{page}'" : "Page `#{page}'"
+                link = '/' + page
+                text = display_name || page
+                "<a href=#{link.inspect} title=#{title.inspect} class=#{klass.inspect}>#{text}</a>"
+            end
         end
 
         def description
@@ -87,11 +100,9 @@ module Markup
         end
 
         def format text
-            text
-        end
-
-        def linkify link, title, klass, text
-            "<a href=#{link.inspect} title=#{title.inspect} class=#{klass.inspect}>#{text}</a>"
+            text.gsub Markup::WIKILINK do |match|
+                Markup::linkify $1, $3
+            end
         end
     end
 
@@ -100,7 +111,7 @@ module Markup
         type 'text', 'Simple text'
 
         def format text
-            "<span style='white-space:pre'>#{text}</span>"
+            "<span style='white-space:pre'>#{super}</span>"
         end
     end
 
@@ -124,13 +135,14 @@ module Markup
 
                 begin
                     require 'bluecloth'
+                    Object.const_set(:Markdown, BlueCloth)
                     return
                 rescue LoadError => boom
                     puts "Looks like you don't have a Markdown interpreter installed!"
-                    puts "Please get one, like"
-                    puts "* RDiscount"
-                    puts "* peg-markdown"
-                    puts "* BlueCloth"
+                    puts "Please get one of the following gems:"
+                    puts "* rdiscount"
+                    puts "* rpeg-markdown"
+                    puts "* bluecloth (not recommended)"
                     puts "Reverting to simple text markup"
                     throw :revert
                 end
@@ -138,7 +150,7 @@ module Markup
         end
 
         def format text
-            Markdown.new(text.gsub("\0foo\0", '')).to_html
+            super(Markdown.new(text).to_html)
         end
     end
 
@@ -160,7 +172,11 @@ module Markup
         end
 
         def format text
-            RedCloth.new(text).to_html
+            text = text.gsub Markup::WIKILINK do |match|
+                "]#{match}"
+            end
+
+            super(RedCloth.new(text).to_html.gsub(%r{\](\[\[.*?\]\])}, '\1'))
         end
     end
 
@@ -180,17 +196,23 @@ module Markup
                     throw :revert
                 end
             end
-        end
 
-        def format text
-            ret = SM::SimpleMarkup.new.convert(text, SM::ToHtml.new)
-            ret.gsub %r{\[\[([^|]+)\|([^|]+)\|([^|]+)\|([^|]+)\]\]} do
-                "<a href=#{$1.inspect} title=#{$2.inspect} class=#{$3.inspect}>#{$4}</a>"
+            SM::ToHtml.class_eval do
+                define_method :handle_special_WIKILINK do |special|
+                    match = Markup::WIKILINK.match(special.text)
+                    Markup::linkify match[1], match[3]
+                end
             end
         end
 
-        def linkify link, title, klass, text
-            "[[#{link}|#{title}|#{klass}|#{text}]]"
+        def format text
+            text = text.gsub Markup::WIKILINK do |link|
+                "]#{link}"
+            end
+
+            sm = SM::SimpleMarkup.new
+            sm.add_special(%r{\]\[\[.*?\]\]}, :WIKILINK)
+            sm.convert(text, SM::ToHtml.new)
         end
     end
 end
@@ -230,16 +252,7 @@ class Qwicky
     end
 
     def format text
-        markup.format(
-            text.gsub %r{\[\[([^|\]]+)(\|([^\]]+))?\]\]} do |match|
-                page = $1
-                nexist = Page.first(:name => page).nil?
-                klass = nexist ? 'bad' : 'good'
-                title = nexist ? "Create page `#{page}'" : "Page `#{page}'"
-                link = '/' + page
-                markup.linkify(link, title, klass, ($3 || $1))
-            end
-        )
+        markup.format(text)
     end
 end
 
