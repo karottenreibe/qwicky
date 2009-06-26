@@ -89,6 +89,10 @@ module Markup
         def format text
             text
         end
+
+        def linkify link, title, klass, text
+            "<a href=#{link.inspect} title=#{title.inspect} class=#{klass.inspect}>#{text}</a>"
+        end
     end
 
     # Text. {{{2
@@ -178,7 +182,7 @@ module Markup
                     require 'rdoc/markup/simple_markup'
                     require 'rdoc/markup/simple_markup/to_html'
                 rescue LoadError => boom
-                    puts "Looks like you don't have RDoc installed!"
+                    puts "Looks like you don't have rdoc installed!"
                     puts "This is the gem needed to render RDoc syntax"
                     puts "Reverting to simple text markup"
                     throw :revert
@@ -187,7 +191,14 @@ module Markup
         end
 
         def format text
-            SM::SimpleMarkup.new.convert(text, SM::ToHtml.new)
+            ret = SM::SimpleMarkup.new.convert(text, SM::ToHtml.new)
+            ret.gsub %r{\[\[([^|]+)\|([^|]+)\|([^|]+)\|([^|]+)\]\]} do
+                "<a href=#{$1.inspect} title=#{$2.inspect} class=#{$3.inspect}>#{$4}</a>"
+            end
+        end
+
+        def linkify link, title, klass, text
+            "[[#{link}|#{title}|#{klass}|#{text}]]"
         end
     end
 end
@@ -227,14 +238,16 @@ class Qwicky
     end
 
     def format text
-        markup.format(text).gsub %r{\[\[([^|\]]+)(\|([^\]]+))?\]\]} do |match|
-            page = $1
-            nexist = Page.first(:name => page).nil?
-            klass = nexist ? 'bad' : 'good'
-            title = nexist ? "Create page `#{page}'" : "Page `#{page}'"
-            link = '/' + page
-            "<a href=#{link.inspect} title=#{title.inspect} class='#{klass}'>#{$3 || $1}</a>"
-        end
+        markup.format(
+            text.gsub %r{\[\[([^|\]]+)(\|([^\]]+))?\]\]} do |match|
+                page = $1
+                nexist = Page.first(:name => page).nil?
+                klass = nexist ? 'bad' : 'good'
+                title = nexist ? "Create page `#{page}'" : "Page `#{page}'"
+                link = '/' + page
+                markup.linkify(link, title, klass, ($3 || $1))
+            end
+        )
     end
 end
 
@@ -308,10 +321,8 @@ get '/..user.stylesheet.css' do
 end
 
 get '/..favicon' do
-    send_data Base64::decode64(haml(:favicon, :layout => false)),
-        :filename => 'favicon.png',
-        :type => 'image/png',
-        :disposition => 'inline'
+    content_type 'image/png'
+    Base64::decode64(haml(:favicon, :layout => false))
 end
 
 get '/..sitemap' do

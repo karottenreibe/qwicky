@@ -1,3 +1,9 @@
+0.0.5
+=====
+
+*   Fixed wikilinks for all markups
+*   Removed deprecated sinatra method
+
 0.0.4
 =====
 
