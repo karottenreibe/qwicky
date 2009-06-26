@@ -1,6 +1,11 @@
 --- 
-- :text: |
+- :index: 0
+  :text: |
     search
 
-  :index: 0
+  :priority: 1
+- :index: 1
+  :text: |
+    wikilinks don't work on heroku?
+
   :priority: 1
