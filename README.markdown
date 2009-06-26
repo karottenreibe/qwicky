@@ -71,7 +71,7 @@ But DON'T PANIC, it's easy:
         gem install rdiscount
 
     or any of the other nice Markdown libraries, e.g.
-    Maruku, peg-markdown etc.
+    peg-markdown etc.
     I wouldn't recommend BlueCloth, unless you really
     think you need that, see [this Blog post] [1].
     (As you might have already guessed from the layout

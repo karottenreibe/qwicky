@@ -123,13 +123,6 @@ module Markup
                 end
 
                 begin
-                    require 'maruku'
-                    Object.const_set(:Markdown, Maruku)
-                    return
-                rescue LoadError => boom
-                end
-
-                begin
                     require 'bluecloth'
                     return
                 rescue LoadError => boom
@@ -137,7 +130,6 @@ module Markup
                     puts "Please get one, like"
                     puts "* RDiscount"
                     puts "* peg-markdown"
-                    puts "* Maruku"
                     puts "* BlueCloth"
                     puts "Reverting to simple text markup"
                     throw :revert
@@ -146,7 +138,7 @@ module Markup
         end
 
         def format text
-            Markdown.new(text).to_html
+            Markdown.new(text.gsub("\0foo\0", '')).to_html
         end
     end
 
