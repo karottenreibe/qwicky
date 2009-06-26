@@ -2,7 +2,7 @@ Share and enjoy!
 ================
 
 Hi dear visitor, this is the README file of
-**[Qwicky] [2]**, the REALLY quick wiki. (and
+**[Qwicky] [qwicky]**, the REALLY quick wiki. (and
 small as well!)
 
 You are obviously reading this, so the README
@@ -70,10 +70,16 @@ But DON'T PANIC, it's easy:
 
         gem install rdiscount
 
-    or any of the other nice Markdown libraries, e.g.
-    peg-markdown etc.
+    or
+
+        gem install rpeg-markdown
+
+    or
+
+        gem install bluecloth
+
     I wouldn't recommend BlueCloth, unless you really
-    think you need that, see [this Blog post] [1].
+    think you need that, see [this Blog post] [antiblue].
     (As you might have already guessed from the layout
     of this document, I prefer Markdown. But it's your
     choice.)
@@ -104,7 +110,7 @@ that's impossible... silly...
 But in any case, if you create a file called _qwicky.sass_
 in the directory where your database and settings are
 stored, qwicky will automatically run it through
-[Sass] [3] and apply it.
+[Sass] [sass] and apply it.
 
 Running Qwucky on a server
 ==========================
@@ -118,10 +124,10 @@ Running Qwucky on a server
 
 
 
-[1]: http://tomayko.com/writings/ruby-markdown-libraries-real-cheap-for-you-two-for-price-of-one
+[antiblue]: http://tomayko.com/writings/ruby-markdown-libraries-real-cheap-for-you-two-for-price-of-one
     "Post about why not to use BlueCloth"
-[2]: http://github.com/karottenreibe/qwicky/
+[qwicky]: http://github.com/karottenreibe/qwicky/
     "Qwicky's Homepage/Git repo/Wiki/whatever :-)"
-[3]: http://haml.hamptoncatlin.com/docs/rdoc/classes/Sass.html
+[sass]: http://haml.hamptoncatlin.com/docs/rdoc/classes/Sass.html
     "Documentation of Sass syntax"
 

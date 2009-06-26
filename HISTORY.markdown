@@ -1,3 +1,10 @@
+0.0.7
+=====
+
+*   No, the last release didn't fix the wikilinks,
+    this one does ;-)
+*   Fixed a little indentation bug in simple markup
+
 0.0.6
 =====
 
