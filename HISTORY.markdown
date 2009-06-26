@@ -1,3 +1,9 @@
+0.0.6
+=====
+
+*   Removed Maruku support -- too buggy
+*   This fixed the wikilinks
+
 0.0.5
 =====
 
