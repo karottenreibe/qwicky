@@ -18,15 +18,16 @@ Contributing
 Got a patch? Found a bug? Need a feature?
 Let me know!
 
-    karottenreibe _at_ gmail _dot_ com
+    karottenreibe _(ät)_ gmail _(döt)_ com   (spam protected)
+
+or [fork me on GitHub] [fork]
 
 Usage
 -----
 
 0.  Install it, if you haven't already:
 
-        gem sources -a http://gems.github.com
-        gem install karottenreibe-qwicky
+        gem install karottenreibe-qwicky --source http://gems.github.com
 
 1.  Start it:
 
@@ -130,4 +131,6 @@ Running Qwucky on a server
     "Qwicky's Homepage/Git repo/Wiki/whatever :-)"
 [sass]: http://haml.hamptoncatlin.com/docs/rdoc/classes/Sass.html
     "Documentation of Sass syntax"
+[fork]: http://github.com/karottenreibe/qwicky/fork
+    "You can fork Qwicky on GitHub to develop your own code on top of it"
 
